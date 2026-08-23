@@ -101,11 +101,14 @@
   <div class="lg-copyright">© 2026 Meridian Group. All rights reserved.</div>
 </div>
 <script>
-  // Static prototype gate -- no real auth backend exists for this
-  // standalone dashboard yet. Any non-empty email/password proceeds
-  // through to the dashboard. Wire this up to real auth (Entra ID,
-  // matching the per-client access project) before relying on it to
-  // actually restrict access.
+  // Interim session gate -- no real Entra ID auth wired up yet (that needs
+  // an Azure app registration + this site's GitHub Pages URL as the
+  // redirect URI, still pending). Until then, this sets a per-tab session
+  // flag that the dashboard itself checks on load and bounces back here if
+  // missing -- so at least a direct link to the dashboard HTML doesn't
+  // skip the login screen entirely. This is NOT real access control (any
+  // non-empty email/password gets the flag); replace with MSAL like the
+  // Sales Insights login once the app registration exists. (Carin, 2026-08-23)
   document.getElementById('lgForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var email = document.getElementById('lgEmail').value.trim();
@@ -120,6 +123,7 @@
     var btn = document.getElementById('lgSubmit');
     btn.disabled = true; btn.textContent = 'Signing in…';
     setTimeout(function () {
+      sessionStorage.setItem('pg_rep_attendance_auth', '1');
       window.location.href = './P%26G%20Rep%20Attendance%20Dashboard.dc.html';
     }, 400);
   });

@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script>
+  // Interim session gate -- bounces to login.html if this tab hasn't been
+  // through it. Not real access control (no server-side check, and a
+  // savvy user can just set the sessionStorage key themselves), just stops
+  // a direct link from skipping the login screen entirely. Localhost is
+  // exempted for local dev/testing, matching the Sales Insights convention.
+  // Replace with a real MSAL check once the Entra ID app registration for
+  // this dashboard exists. (Carin, 2026-08-23)
+  (function () {
+    var isLocalDev = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    if (!isLocalDev && !sessionStorage.getItem('pg_rep_attendance_auth')) {
+      window.location.href = './login.html';
+    }
+  })();
+</script>
 </head>
 <body>
 <x-dc>
