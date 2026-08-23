@@ -65,10 +65,13 @@
 
   <aside style="width:196px; flex:none; position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto; display:flex; flex-direction:column; border-right:1px solid var(--color-neutral-800); background:#0a1c3a;">
     <div style="display:flex; align-items:center; gap:9px; padding:22px 16px 14px;">
-      <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(145deg, var(--color-accent), #a94711); flex:none;"></div>
+      <img src="./assets/meridian-mark.png" alt="Meridian" style="width:30px; height:30px; object-fit:contain; flex:none;">
       <div style="font-size:15px; font-weight:700; letter-spacing:-0.015em; line-height:1.2;">Meridian <span style="color:var(--color-accent);">Group</span></div>
     </div>
-    <div style="padding:0 16px 12px; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-neutral-500); text-align:center;">P&amp;G Field Attendance</div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:8px; padding:0 16px 14px;">
+      <img src="./assets/pg-logo.png" alt="P&amp;G" style="width:18px; height:18px; object-fit:contain; flex:none;">
+      <div style="font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-neutral-500);">Field Attendance</div>
+    </div>
     <nav style="display:flex; flex-direction:column; gap:3px; padding:6px 10px; flex:1;">
       <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
         <div class="nx-nav" onClick="{{ n.go }}" style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:var(--radius-md); cursor:pointer; font-size:12.5px; font-weight:500; border-left:2px solid {{ n.mark }}; background:{{ n.bg }}; color:{{ n.fg }};">
@@ -77,6 +80,10 @@
         </div>
       </sc-for>
     </nav>
+    <div class="nx-nav" onClick="{{ onLogout }}" style="display:flex; align-items:center; gap:9px; margin:0 10px 8px; padding:9px 10px; border-radius:var(--radius-md); cursor:pointer; font-size:12.5px; font-weight:500; color:var(--color-neutral-400);">
+      <i class="ph ph-sign-out" style="font-size:15px; opacity:0.9;"></i>
+      <span>Log out</span>
+    </div>
     <div style="flex:none; padding:12px 16px 20px; border-top:1px solid var(--color-neutral-800); font-size:9.5px; color:var(--color-neutral-500); line-height:1.5; text-align:center;">Meridian Group<br><span style="color:var(--color-neutral-300);">Retail Execution</span></div>
   </aside>
 
@@ -1245,6 +1252,7 @@ class Component extends DCLogic {
         { label: 'Attendance by Store', icon: 'ph ph-storefront', go: () => this.setState({ page: 'stores' }), mark: s.page === 'stores' ? '#ec6d25' : 'transparent', bg: s.page === 'stores' ? 'rgba(236,109,37,.1)' : 'transparent', fg: s.page === 'stores' ? '#fff' : '#c9d7e6' }
       ],
       isOverview: s.page === 'overview', isRoster: s.page === 'roster', isDaily: s.page === 'daily', isStores: s.page === 'stores',
+      onLogout: () => { sessionStorage.removeItem('pg_rep_attendance_auth'); window.location.href = './login.html'; },
       month: s.month || 'AUG', monthOptions,
       onMonth: (e) => this.setState({ month: e.target.value, date: null }),
       region: s.region, banner: s.banner, manager: s.manager, division: s.division, repType: s.repType,
