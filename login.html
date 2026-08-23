@@ -8,120 +8,151 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Same tokens as the dashboard itself (P&G Rep Attendance Dashboard.dc.html)
+     -- keep these two files in sync if the dashboard's palette changes.
+     This screen reproduces Carin's "Login Screen (Dashboard Background)"
+     design from the Meridian Nexus Design System zip, ported from its
+     React/Babel-CDN prototype to plain HTML/CSS/vanilla JS so it matches
+     the rest of this project's dependency-free approach. (2026-08-23) */
   :root {
-    /* Same tokens as the dashboard itself (P&G Rep Attendance Dashboard.dc.html)
-       -- keep these two files in sync if the dashboard's palette changes. */
     --color-bg:#000C21; --color-surface:#061530; --color-text:#f3f7fc;
-    --color-accent:#ec6d25; --color-accent-300:#f2955c;
+    --color-accent:#ec6d25; --color-accent-hover:#d85f1c; --color-accent-300:#f2955c;
     --color-neutral-200:#e2ebf5; --color-neutral-300:#c9d7e6; --color-neutral-400:#9dc4ec;
     --color-neutral-500:#5f80a6; --color-neutral-800:#1c3f6b;
-    --radius-md:8px; --radius-lg:14px;
+    --status-good:#22C55E;
+    --radius-sm:6px; --radius-md:8px; --radius-lg:14px; --radius-xl:18px;
   }
   * { box-sizing:border-box; }
   html, body { margin:0; padding:0; height:100%; }
-  body {
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-family: 'Poppins', system-ui, sans-serif;
-    display:flex; align-items:center; justify-content:center;
-    min-height:100vh; padding:20px;
-  }
+  body { font-family:'Poppins', system-ui, sans-serif; background:var(--color-bg); color:var(--color-text); -webkit-font-smoothing:antialiased; }
+
   .lg-shell {
     background:
-      radial-gradient(120% 70% at 8% -10%, #0e2a4c 0%, var(--color-bg) 55%),
-      radial-gradient(circle at 85% 100%, rgba(236,109,37,.08), transparent 40%);
-    position:fixed; inset:0; z-index:-1;
+      linear-gradient(180deg, rgba(0,12,33,.55) 0%, rgba(0,12,33,.82) 100%),
+      url('./assets/rep-attendance-bg-dark.png') center/cover no-repeat,
+      var(--color-bg);
+    min-height:100vh; display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+    gap:40px; padding:40px clamp(20px,6vw,80px);
   }
-  .lg-card {
-    width:360px; background:var(--color-surface); border:1px solid var(--color-neutral-800);
-    border-radius:var(--radius-lg); padding:32px 28px 26px; box-shadow:0 24px 60px rgba(0,0,0,.4);
+  .lg-left { flex:1 1 480px; min-width:0; max-width:600px; display:flex; flex-direction:column; gap:26px; padding:40px 0; }
+  .lg-logo { height:30px; object-fit:contain; align-self:flex-start; }
+  .lg-eyebrow { font-size:11px; font-weight:600; letter-spacing:.18em; color:var(--color-accent); }
+  .lg-heading { font-size:clamp(28px,4vw,44px); font-weight:800; line-height:1.1; color:#fff; }
+  .lg-heading span { color:var(--color-accent); }
+  .lg-subheading { font-size:19px; font-weight:600; color:var(--color-neutral-200); }
+  .lg-desc { font-size:13.5px; color:var(--color-neutral-400); line-height:1.6; max-width:480px; }
+  .lg-features { display:flex; gap:28px; flex-wrap:wrap; margin-top:12px; }
+  .lg-feature { flex:1 1 180px; min-width:0; max-width:230px; display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+  .lg-feature-icon {
+    width:40px; height:40px; border-radius:50%; border:1px solid rgba(236,109,37,.4);
+    display:flex; align-items:center; justify-content:center; color:var(--color-accent); flex-shrink:0;
   }
-  .lg-logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:24px; }
-  .lg-logo-mark { width:34px; height:34px; border-radius:8px; background:linear-gradient(145deg, var(--color-accent), #a94711); flex:none; }
-  .lg-logo-text { font-size:16px; font-weight:700; letter-spacing:-0.015em; }
-  .lg-logo-text span { color:var(--color-accent); }
-  .lg-title { font-size:18px; font-weight:700; margin:0; }
-  .lg-sub { font-size:11px; color:var(--color-neutral-500); margin-top:4px; margin-bottom:22px; }
-  .lg-label { font-size:11px; font-weight:500; color:var(--color-neutral-400); letter-spacing:.02em; margin-bottom:6px; display:block; }
-  .lg-field { margin-bottom:16px; }
-  .lg-input {
-    width:100%; height:38px; background:#0a1c3a; border:1px solid var(--color-neutral-800);
-    border-radius:var(--radius-md); color:var(--color-text); font-family:inherit; font-size:12.5px;
-    padding:0 12px; outline:none; transition:border-color .14s ease;
+  .lg-feature-title { font-size:13px; font-weight:600; color:var(--color-neutral-200); }
+  .lg-feature-body { font-size:11.5px; color:var(--color-neutral-400); line-height:1.5; }
+
+  .lg-right {
+    flex:0 1 380px; min-width:300px; background:rgba(6,21,48,.72); backdrop-filter:blur(10px);
+    border:1px solid var(--color-neutral-800); border-radius:var(--radius-xl);
+    box-shadow:0 24px 60px rgba(0,0,0,.45); padding:36px 32px;
+    display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
   }
-  .lg-input::placeholder { color:var(--color-neutral-500); }
-  .lg-input:focus { border-color:var(--color-accent); }
-  .lg-row { display:flex; justify-content:space-between; align-items:center; }
-  .lg-forgot { font-size:10.5px; color:var(--color-accent-300); text-decoration:none; margin-bottom:6px; }
+  .lg-right-icon {
+    width:48px; height:48px; border-radius:50%; border:1px solid rgba(236,109,37,.4);
+    display:flex; align-items:center; justify-content:center; color:var(--color-accent);
+  }
+  .lg-right-eyebrow { font-size:10.5px; font-weight:600; letter-spacing:.14em; color:var(--color-accent); }
+  .lg-right-title { font-size:24px; font-weight:700; color:#fff; }
+  .lg-right-desc { font-size:12.5px; color:var(--color-neutral-400); line-height:1.6; }
+  .lg-ms-btn {
+    width:100%; height:44px; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:var(--color-accent); border:none; border-radius:var(--radius-sm); color:#fff;
+    font-weight:600; font-size:13px; font-family:inherit; cursor:pointer;
+    transition:background .14s ease, transform .14s ease; margin-top:10px;
+  }
+  .lg-ms-btn:hover { background:var(--color-accent-hover); }
+  .lg-ms-btn:active { transform:scale(.98); }
+  .lg-ms-btn:disabled { opacity:.65; cursor:default; }
+  .lg-secure-row {
+    display:flex; align-items:center; gap:6px; margin-top:8px; padding-top:14px;
+    border-top:1px solid var(--color-neutral-800); width:100%; justify-content:center;
+  }
+  .lg-secure-dot { width:6px; height:6px; border-radius:50%; background:var(--status-good); }
+  .lg-secure-text { font-size:10.5px; color:var(--color-neutral-500); }
   .lg-error {
     font-size:11px; color:#D94F3A; background:rgba(217,79,58,.1); border:1px solid rgba(217,79,58,.3);
-    border-radius:var(--radius-md); padding:8px 10px; margin-bottom:14px; display:none;
+    border-radius:var(--radius-sm); padding:8px 10px; width:100%; display:none;
   }
-  .lg-btn {
-    width:100%; height:40px; border:none; border-radius:var(--radius-md); cursor:pointer;
-    background:var(--color-accent); color:#fff; font-family:inherit; font-size:13px; font-weight:600;
-    transition:background .14s ease;
+
+  @media (max-width: 900px) {
+    .lg-features { display:none; }
   }
-  .lg-btn:hover { background:#d85f1c; }
-  .lg-btn:disabled { opacity:.6; cursor:default; }
-  .lg-footer {
-    text-align:center; font-size:10.5px; color:var(--color-neutral-500); margin-top:18px;
-    padding-top:14px; border-top:1px solid var(--color-neutral-800);
-  }
-  .lg-copyright { text-align:center; font-size:10px; color:var(--color-neutral-500); margin-top:18px; }
 </style>
 </head>
 <body>
-<div class="lg-shell"></div>
-<div>
-  <div class="lg-card">
-    <div class="lg-logo">
-      <div class="lg-logo-mark"></div>
-      <div class="lg-logo-text">Meridian <span>Group</span></div>
+<div class="lg-shell">
+  <div class="lg-left">
+    <img class="lg-logo" src="./assets/meridian-logo.png" alt="Meridian Group">
+    <div style="display:flex; flex-direction:column; gap:14px; min-width:0;">
+      <div class="lg-eyebrow">MERIDIAN NEXUS</div>
+      <div class="lg-heading">Rep Attendance <span>&amp; Field Activity</span></div>
+      <div class="lg-subheading">Field Workforce Visibility</div>
+      <div class="lg-desc">Track rep attendance, store presence, check-ins and field activity across every region — from one live view.</div>
     </div>
-    <h1 class="lg-title">Sign in to P&amp;G Rep Attendance</h1>
-    <div class="lg-sub">Field intelligence for the P&amp;G account team</div>
-    <form id="lgForm">
-      <div class="lg-field">
-        <label class="lg-label" for="lgEmail">Work email</label>
-        <input class="lg-input" id="lgEmail" type="email" placeholder="you@meridiangroup.co.za" required>
-      </div>
-      <div class="lg-field">
-        <div class="lg-row">
-          <label class="lg-label" for="lgPass">Password</label>
-          <a class="lg-forgot" href="#">Forgot?</a>
+    <div class="lg-features">
+      <div class="lg-feature">
+        <div class="lg-feature-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 11 2 2 4-4"/></svg>
         </div>
-        <input class="lg-input" id="lgPass" type="password" placeholder="••••••••" required>
+        <div class="lg-feature-title">Attendance visibility</div>
+        <div class="lg-feature-body">See who is active, absent or has not checked in.</div>
       </div>
-      <div class="lg-error" id="lgError">Enter your email and password.</div>
-      <button class="lg-btn" id="lgSubmit" type="submit">Sign in</button>
-    </form>
-    <div class="lg-footer">Need access? Contact your regional admin.</div>
+      <div class="lg-feature">
+        <div class="lg-feature-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h20l-1.6 10.5a2 2 0 0 1-2 1.5H5.6a2 2 0 0 1-2-1.5L2 7Z"/><path d="M6 7V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
+        </div>
+        <div class="lg-feature-title">Store presence</div>
+        <div class="lg-feature-body">Understand where reps are working and which stores have been visited.</div>
+      </div>
+      <div class="lg-feature">
+        <div class="lg-feature-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+        </div>
+        <div class="lg-feature-title">Exceptions &amp; compliance</div>
+        <div class="lg-feature-body">Quickly identify missed visits, unusual activity and attendance gaps requiring attention.</div>
+      </div>
+    </div>
   </div>
-  <div class="lg-copyright">© 2026 Meridian Group. All rights reserved.</div>
+
+  <div class="lg-right">
+    <div class="lg-right-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+    </div>
+    <div class="lg-right-eyebrow">REP ATTENDANCE &amp; FIELD ACTIVITY</div>
+    <div class="lg-right-title">Welcome back</div>
+    <div class="lg-right-desc">Sign in with your Meridian Microsoft account to access live rep attendance and field activity insights.</div>
+    <div class="lg-error" id="lgError">Sign-in failed. Please try again.</div>
+    <button class="lg-ms-btn" id="lgSubmit" type="button">
+      <svg width="15" height="15" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>
+      <span id="lgBtnLabel">Sign in with Microsoft</span>
+    </button>
+    <div class="lg-secure-row">
+      <span class="lg-secure-dot"></span>
+      <span class="lg-secure-text">Secure access · Microsoft 365</span>
+    </div>
+  </div>
 </div>
 <script>
   // Interim session gate -- no real Entra ID auth wired up yet (that needs
   // an Azure app registration + this site's GitHub Pages URL as the
-  // redirect URI, still pending). Until then, this sets a per-tab session
-  // flag that the dashboard itself checks on load and bounces back here if
-  // missing -- so at least a direct link to the dashboard HTML doesn't
-  // skip the login screen entirely. This is NOT real access control (any
-  // non-empty email/password gets the flag); replace with MSAL like the
-  // Sales Insights login once the app registration exists. (Carin, 2026-08-23)
-  document.getElementById('lgForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var email = document.getElementById('lgEmail').value.trim();
-    var pass = document.getElementById('lgPass').value;
-    var errEl = document.getElementById('lgError');
-    if (!email || !pass) {
-      errEl.textContent = 'Enter your email and password.';
-      errEl.style.display = 'block';
-      return;
-    }
+  // redirect URI, still pending). Until then, clicking through sets a
+  // per-tab session flag that the dashboard itself checks on load and
+  // bounces back here if missing. This is NOT real access control; swap
+  // this handler for MSAL's loginRedirect (like the Sales Insights login)
+  // once the app registration exists. (Carin, 2026-08-23)
+  document.getElementById('lgSubmit').addEventListener('click', function () {
+    var btn = this, label = document.getElementById('lgBtnLabel'), errEl = document.getElementById('lgError');
     errEl.style.display = 'none';
-    var btn = document.getElementById('lgSubmit');
-    btn.disabled = true; btn.textContent = 'Signing in…';
+    btn.disabled = true; label.textContent = 'Signing in…';
     setTimeout(function () {
       sessionStorage.setItem('pg_rep_attendance_auth', '1');
       window.location.href = './P%26G%20Rep%20Attendance%20Dashboard.dc.html';
