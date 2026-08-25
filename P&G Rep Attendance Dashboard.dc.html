@@ -1270,7 +1270,10 @@ class Component extends DCLogic {
       isOverview: s.page === 'overview', isRoster: s.page === 'roster', isDaily: s.page === 'daily', isStores: s.page === 'stores',
       onLogout: () => { sessionStorage.removeItem('pg_rep_attendance_auth'); window.location.href = './login.html'; },
       refreshing: s.refreshing, refreshMsg: s.refreshMsg,
-      refreshLabel: s.refreshing ? 'Refreshing…' : 'Refresh now',
+      // Live Excel recalculation (not a raw file download) takes ~30-40s
+      // for this sheet -- say so up front so a real in-progress refresh
+      // doesn't read as a stuck/broken button (Carin, 2026-08-25).
+      refreshLabel: s.refreshing ? 'Refreshing… (~30-40s)' : 'Refresh now',
       onRefresh: () => {
         if (s.refreshing) return;
         this.setState({ refreshing: true, refreshMsg: '' });
