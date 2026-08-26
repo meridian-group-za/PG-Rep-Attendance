@@ -1004,8 +1004,12 @@ class Component extends DCLogic {
 
     const dateOptions = D.dates.map(d => ({ value: d, label: this.fmtDate(d) }));
     const dq = s.dailySearch.trim().toLowerCase();
+    // Dedicated Pharma excluded from every Daily Visits calculation per
+    // Carin's request, 2026-08-26 -- this page's own rule, not a global
+    // filter (MTD Overview/Roster/Stores pages still include them).
     const dayRows = D.dailyRows.filter(r =>
       r.date === date && matchesGlobal(r) &&
+      (r.repType || '').toUpperCase() !== 'DEDICATED PHARMA' &&
       (!dq || r.name.toLowerCase().includes(dq) || r.store.toLowerCase().includes(dq))
     );
     const dueCount = dayRows.length;
@@ -1168,7 +1172,7 @@ class Component extends DCLogic {
       .sort((a, b) => parseInt(a.pct) - parseInt(b.pct));
 
     const trendVals = D.dates.map(dt => {
-      const rows = D.dailyRows.filter(r => r.date === dt && matchesGlobal(r));
+      const rows = D.dailyRows.filter(r => r.date === dt && matchesGlobal(r) && (r.repType || '').toUpperCase() !== 'DEDICATED PHARMA');
       const due = rows.length, done = rows.filter(r => r.actual > 0).length;
       const pct = due > 0 ? Math.round(done / due * 100) : 0;
       return { dt, pct };
