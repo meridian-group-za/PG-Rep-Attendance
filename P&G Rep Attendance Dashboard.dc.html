@@ -19,6 +19,19 @@
     }
   })();
 </script>
+<!-- Cache-busted so the browser (and GitHub Pages' CDN) can never serve a
+     stale cached copy -- a plain <script src="./attendance-data.js"> with
+     a fixed URL was being cached across page reloads on some machines, so
+     a refresh could succeed on the backend (new commit landed on GitHub)
+     while the viewer's own browser kept showing old numbers until a hard
+     refresh. document.write from an inline script at this exact position
+     inserts the tag synchronously, in place, so load order is unaffected
+     -- must live in this plain <head>, NOT inside the <helmet> block
+     further down, which has its own custom script-handling that silently
+     broke when given a script tag with no `src` attribute (blank page).
+     (Carin, 2026-08-26) -->
+<script>document.write('<script src="./attendance-data.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="./attendance-data-jul.js?v=' + Date.now() + '"><\/script>');</script>
 </head>
 <body>
 <x-dc>
@@ -30,8 +43,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="_ds/nocturne-70a65e7a-5b99-48b7-a280-915a2464fb8b/_ds_bundle.js"></script>
-  <script src="./attendance-data.js"></script>
-  <script src="./attendance-data-jul.js"></script>
+  <!-- attendance-data.js / attendance-data-jul.js are loaded from the
+       plain <head> above (before this <helmet> block even starts), with
+       cache-busting -- see the comment there for why they moved out of
+       this custom <helmet> element. -->
   <script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
   <style>
