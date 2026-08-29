@@ -339,7 +339,7 @@
         </div>
 
         <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
-          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:10px;">MTD and weekly attendance by province &middot; &ge;95% green, 90&ndash;94% yellow, &lt;90% orange</div>
+          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:10px;">MTD and weekly attendance by province &middot; &ge;95% green, 90&ndash;94% amber, &lt;90% red</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:var(--space-4);">
             <sc-for list="{{ weekRepTypePills }}" as="p" hint-placeholder-count="4">
               <div onClick="{{ p.toggle }}" style="cursor:pointer; font-size:11px; font-weight:800; padding:6px 14px; border-radius:999px; border:2px solid {{ p.pillBorder }}; background:{{ p.pillBg }}; color:{{ p.pillColor }};">{{ p.label }}</div>
@@ -913,11 +913,12 @@ class Component extends DCLogic {
     // via filteredStoreRows. Week 5 only exists in longer months, so only
     // show week columns that have any real target anywhere this month
     // rather than always rendering 5 and leaving some entirely blank.
-    // Green >=95%, yellow 90-94%, orange below -- matches the Excel
-    // reference table Carin sent (2026-08-29), replacing the earlier
-    // green/amber/red scale. Text stays dark on every cell, same as the
-    // reference (no white-on-orange).
-    const weekPctColor = (pct) => pct >= 95 ? '#66BB6A' : pct >= 90 ? '#FFEB3B' : '#F5A623';
+    // Green >=95%, amber 90-94%, red below -- reuses the exact same three
+    // colors as every other heat cell/legend on this dashboard (Ahead/On
+    // pace/Behind legend, Line manager scorecard, statusFor()), not a new
+    // palette invented for this one table (Carin, 2026-08-29: "the
+    // conditional formatting doesn't look the same as the dashboard").
+    const weekPctColor = (pct) => pct >= 95 ? '#22C55E' : pct >= 90 ? '#E8A838' : '#D94F3A';
     // Local multi-select rep-type pills, scoped to just this table (Carin,
     // 2026-08-29) -- separate from the global single-select "All rep
     // types" dropdown, which still applies first via filteredStoreRows.
