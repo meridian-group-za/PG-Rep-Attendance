@@ -343,7 +343,7 @@
           <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:10px;">Weekly target vs actual, by province &middot; &ge;95% green, 80&ndash;94% amber, &lt;80% red</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:var(--space-4);">
             <sc-for list="{{ weekRepTypePills }}" as="p" hint-placeholder-count="4">
-              <div onClick="{{ p.toggle }}" style="cursor:pointer; font-size:11px; font-weight:800; padding:6px 14px; border-radius:999px; border:2px solid {{ p.active ? '#EC6D25' : 'var(--color-neutral-700)' }}; background:{{ p.active ? '#EC6D25' : '#0a1c3a' }}; color:{{ p.active ? '#0a1c3a' : 'var(--color-neutral-400)' }};">{{ p.label }}</div>
+              <div onClick="{{ p.toggle }}" style="cursor:pointer; font-size:11px; font-weight:800; padding:6px 14px; border-radius:999px; border:2px solid {{ p.pillBorder }}; background:{{ p.pillBg }}; color:{{ p.pillColor }};">{{ p.label }}</div>
             </sc-for>
           </div>
           <div class="table-scroll" style="overflow-x:auto;">
@@ -900,14 +900,25 @@ class Component extends DCLogic {
     // selected and clicking to remove (confirmed with Carin, 2026-08-29,
     // the first version read as broken since every pill looked "on" at
     // rest with no visible way to build a selection).
-    const weekRepTypePills = repTypeOptions.map((t) => ({
-      label: t, active: s.weekSelectedRepTypes.includes(t),
-      toggle: () => {
-        const cur = s.weekSelectedRepTypes;
-        const next = cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t];
-        this.setState({ weekSelectedRepTypes: next });
-      },
-    }));
+    const weekRepTypePills = repTypeOptions.map((t) => {
+      const active = s.weekSelectedRepTypes.includes(t);
+      // Precomputed as plain strings, not a ternary inside {{ }} -- matches
+      // the working pattern used by navItems' mark/bg/fg elsewhere in this
+      // file. A ternary written directly in the template (like the first
+      // two attempts at this pill used) never visibly changed anything
+      // regardless of color choice, which is what gave this away.
+      return {
+        label: t, active,
+        pillBorder: active ? '#EC6D25' : 'var(--color-neutral-700)',
+        pillBg: active ? '#EC6D25' : '#0a1c3a',
+        pillColor: active ? '#0a1c3a' : 'var(--color-neutral-400)',
+        toggle: () => {
+          const cur = s.weekSelectedRepTypes;
+          const next = cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t];
+          this.setState({ weekSelectedRepTypes: next });
+        },
+      };
+    });
     const weekByRegionMap = new Map();
     for (const r of filteredStoreRows) {
       if (s.weekSelectedRepTypes.length && !s.weekSelectedRepTypes.includes(r.repType)) continue;
