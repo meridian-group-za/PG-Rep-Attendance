@@ -1,5 +1,5 @@
 import sys, json, openpyxl
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 def d2s(v):
     if isinstance(v, datetime):
@@ -18,9 +18,12 @@ def extract(path, month_code):
     tgt_i, act_i = idx['Total Target (Oct21)'], idx['Actual (Oct 21 MTD)']
     wk_tgt_i = [idx['Week 1 Target'], idx['Week 2 Target'], idx['Week 3 Target'], idx['Week 4 Target'], idx['Week 5 Target']]
     wk_act_i = [idx['WK1 Actual'], idx['Wk 2 Actual'], idx['Wk 3 Actual'], idx['Wk 4 Actual'], idx['Wk 5 Actual']]
+    # Real "Channel" column (Carin, 2026-08-29) -- looked up by name like
+    # the columns above, not a hardcoded position.
+    channel_i = idx['Channel']
 
     storeRows = []
-    rep_agg = {}  # empId -> {name, region, repType, lineManager, banner, division, storeCount, target, actual}
+    rep_agg = {}  # empId -> {name, region, repType, lineManager, banner, channel, division, storeCount, target, actual}
     for row in ws.iter_rows(min_row=2, values_only=True):
         if row[0] is None:
             continue
@@ -30,6 +33,7 @@ def extract(path, month_code):
         repType = row[4]
         lineManager = row[6]
         banner = row[7]
+        channel = row[channel_i]
         division = row[8]
         store = row[12]
         target = row[tgt_i] or 0
@@ -37,7 +41,7 @@ def extract(path, month_code):
         wk = [ (row[wk_tgt_i[i]] or 0, row[wk_act_i[i]] or 0) for i in range(5) ]
 
         storeRows.append({
-            'empId': empId, 'repName': name, 'region': region, 'banner': banner,
+            'empId': empId, 'repName': name, 'region': region, 'banner': banner, 'channel': channel,
             'division': division, 'lineManager': lineManager, 'repType': repType,
             'store': store, 'target': target, 'actual': actual, 'visited': actual > 0,
             'wk1Target': wk[0][0], 'wk1Actual': wk[0][1],
@@ -50,7 +54,7 @@ def extract(path, month_code):
         if empId not in rep_agg:
             rep_agg[empId] = {
                 'empId': empId, 'name': name, 'region': region, 'repType': repType,
-                'lineManager': lineManager, 'banner': banner, 'division': division,
+                'lineManager': lineManager, 'banner': banner, 'channel': channel, 'division': division,
                 'storeCount': 0, 'target': 0, 'actual': 0
             }
         r = rep_agg[empId]
@@ -77,11 +81,15 @@ def extract(path, month_code):
 
     meta = {
         'totalTarget': totalTarget, 'totalActual': totalActual, 'overallProgress': overallProgress,
-        'repCount': len(mtdReps), 'storeCount': len(storeRows), 'timeGone': timeGone
+        'repCount': len(mtdReps), 'storeCount': len(storeRows), 'timeGone': timeGone,
+        'generatedAt': datetime.now(timezone.utc).isoformat()
     }
 
     # --- Daily sheet: per-day per-store-rep rows (for trend chart / daily visit log) ---
     dw = wb['Daily']
+    daily_hdr = next(dw.iter_rows(min_row=1, max_row=1, values_only=True))
+    daily_idx = {h: i for i, h in enumerate(daily_hdr)}
+    daily_channel_i = daily_idx.get('Channel')  # not confirmed to exist on this sheet -- degrade to None if absent
     dailyRows = []
     dates = set()
     for row in dw.iter_rows(min_row=2, values_only=True):
@@ -91,8 +99,9 @@ def extract(path, month_code):
         dates.add(dt)
         dailyRows.append({
             'date': dt, 'empId': str(row[14]), 'name': row[15], 'repType': row[16],
-            'lineManager': row[20], 'region': row[12], 'banner': row[13], 'division': row[10],
-            'store': row[2], 'target': row[-2] or 0, 'actual': row[-1] or 0
+            'lineManager': row[20], 'region': row[12], 'banner': row[13],
+            'channel': row[daily_channel_i] if daily_channel_i is not None else None,
+            'division': row[10], 'store': row[2], 'target': row[-2] or 0, 'actual': row[-1] or 0
         })
 
     data = {

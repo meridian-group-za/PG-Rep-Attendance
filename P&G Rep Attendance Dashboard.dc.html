@@ -101,7 +101,7 @@
     </div>
     <div style="flex:none; padding:14px 16px 20px; border-top:1px solid var(--color-neutral-800); display:flex; flex-direction:column; align-items:center; gap:6px;">
       <img src="./assets/meridian-logo.png" alt="Meridian Group" style="height:20px; object-fit:contain;">
-      <span style="font-size:9.5px; color:var(--color-neutral-500);">Retail Execution</span>
+      <span style="font-size:9.5px; color:var(--color-neutral-500); text-align:center;">{{ dataRefreshedLabel }}</span>
     </div>
   </aside>
 
@@ -747,22 +747,23 @@ class Component extends DCLogic {
     const KPI_ACCENTS = ['#22C55E', '#D94F3A', '#F58220', '#3B82F6'];
     const withAccent = (list) => list.map((k, i) => ({ ...k, accent: KPI_ACCENTS[i % KPI_ACCENTS.length] }));
 
-    // No raw "channel" field exists anywhere in the source data -- derived
-    // from banner, same convention already used on the Call Cycle Coverage
-    // dashboard (Carin, 2026-08-29). P&G's actual banners here are almost
-    // entirely pharmacy-group names (Clicks, Dis-Chem, Medirite, Link, and
-    // several independent pharmacy franchises like Van Heerden/Arrie Nel/
-    // Kalapeng/TLC/Sparkport), with a handful of grocery corporates
-    // (Shoprite, Checkers, Pick n Pay) also carrying P&G lines.
-    const CHANNEL_MAP = {
-      'SHOPRITE': 'Grocery', 'CHECKERS': 'Grocery',
-      'PICK N PAY FAMILY': 'Grocery', 'PICK N PAY CORPORATE': 'Grocery', 'PICK N PAY HYPERMARKETS': 'Grocery',
-    };
-    const channelOf = (b) => CHANNEL_MAP[(b || '').trim().toUpperCase()] || 'Pharmacy';
+    // Replaces the old static "Retail Execution" sidebar tagline (Carin,
+    // 2026-08-29). Older cached months refreshed before generatedAt existed
+    // won't have it -- fall back to something honest rather than a blank
+    // or a wrong date.
+    const dataRefreshedLabel = D.meta.generatedAt
+      ? 'Data refreshed ' + new Date(D.meta.generatedAt).toLocaleString('en-ZA', {
+          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Johannesburg'
+        })
+      : 'Data refresh time unavailable';
 
     const regionOptions = [...new Set(D.mtdReps.map(r => r.region))].sort();
     const bannerOptions = [...new Set(D.mtdReps.map(r => r.banner))].filter(b => b && b !== 'UNKNOWN').sort();
-    const channelOptions = [...new Set(D.mtdReps.map(r => channelOf(r.banner)))].sort();
+    // Real "Channel" column from the source sheet (Carin, 2026-08-29 --
+    // confirmed it exists; do not derive this from banner). Older cached
+    // months refreshed before this field was added will have channel:null
+    // on every row -- filtered out here same as other blank fields.
+    const channelOptions = [...new Set(D.mtdReps.map(r => r.channel))].filter(Boolean).sort();
     const managerOptions = [...new Set(D.mtdReps.map(r => r.lineManager))].filter(Boolean).sort();
     const divisionOptions = [...new Set(D.mtdReps.map(r => r.division))].filter(Boolean).sort();
     const repTypeOptions = [...new Set(D.mtdReps.map(r => r.repType))].filter(Boolean).sort();
@@ -770,7 +771,7 @@ class Component extends DCLogic {
     const matchesGlobal = (r) =>
       (s.region === 'ALL' || r.region === s.region) &&
       (s.banner === 'ALL' || r.banner === s.banner) &&
-      (s.channel === 'ALL' || channelOf(r.banner) === s.channel) &&
+      (s.channel === 'ALL' || r.channel === s.channel) &&
       (s.manager === 'ALL' || r.lineManager === s.manager) &&
       (s.division === 'ALL' || r.division === s.division) &&
       (s.repType === 'ALL' || r.repType === s.repType);
@@ -1294,7 +1295,7 @@ class Component extends DCLogic {
           })
           .catch((e) => this.setState({ refreshing: false, refreshMsg: 'Refresh failed: ' + e.message }));
       },
-      month: s.month || 'AUG', monthOptions,
+      month: s.month || 'AUG', monthOptions, dataRefreshedLabel,
       onMonth: (e) => this.setState({ month: e.target.value, date: null }),
       region: s.region, banner: s.banner, channel: s.channel, manager: s.manager, division: s.division, repType: s.repType,
       regionOptions, bannerOptions, channelOptions, managerOptions, divisionOptions, repTypeOptions,
