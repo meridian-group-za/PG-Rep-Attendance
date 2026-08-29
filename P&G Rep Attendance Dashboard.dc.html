@@ -854,9 +854,16 @@ class Component extends DCLogic {
     ]);
 
     const aggBy = (key) => {
+      // Grouped by normalized-uppercase key, not the raw value verbatim --
+      // the source sheet has real mixed-casing for the same region (e.g.
+      // "Port Elizabeth" and "PORT ELIZABETH" as two different values for
+      // 9 + 4 reps), which otherwise splits into two separate rows instead
+      // of merging (Carin, 2026-08-29: "PE twice in % attendance by
+      // region?"). Uppercase also matches SHORT_REGION_NAME's own keys.
       const m = new Map();
       for (const r of filteredReps) {
-        const k = r[key] || 'UNKNOWN';
+        const raw = r[key] || 'UNKNOWN';
+        const k = raw.toString().trim().toUpperCase();
         if (k === 'UNKNOWN') continue;
         if (!m.has(k)) m.set(k, { name: k, target: 0, actual: 0, reps: 0 });
         const o = m.get(k); o.target += r.target; o.actual += r.actual; o.reps++;
@@ -874,6 +881,12 @@ class Component extends DCLogic {
       'WESTERN CAPE': 'Western Cape', 'GAUTENG': 'Gauteng', 'FREE STATE': 'Free State',
       'PORT ELIZABETH': 'Port Elizabeth', 'NORTH WEST': 'North West', 'LIMPOPO': 'Limpopo', 'SWD': 'SWD'
     };
+    // Source sheet has real mixed-casing for the same region (e.g. "Port
+    // Elizabeth" AND "PORT ELIZABETH" as two different values, 4 + 9 reps)
+    // -- every region grouping/lookup on this page must normalize through
+    // this one function or the same region silently splits into two rows
+    // (Carin, 2026-08-29: "PE twice in % attendance by region?").
+    const normRegion = (v) => (v || 'UNKNOWN').toString().trim().toUpperCase();
     const regionAgg = aggBy('region');
     const regionRows = rowify(regionAgg).map(r => ({ ...r, name: SHORT_REGION_NAME[r.name] || r.name }));
     // Split by division using the real data (which division each region's
@@ -884,7 +897,7 @@ class Component extends DCLogic {
     // renames it), since that's what filteredReps.region actually is.
     const regionToDivision = new Map();
     for (const r of filteredReps) {
-      if (r.region && r.division && !regionToDivision.has(r.region)) regionToDivision.set(r.region, r.division);
+      if (r.region && r.division && !regionToDivision.has(normRegion(r.region))) regionToDivision.set(normRegion(r.region), r.division);
     }
     const rawByShortName = new Map(regionAgg.map(o => [SHORT_REGION_NAME[o.name] || o.name, o.name]));
     const regionRowsInland = regionRows.filter(r => (regionToDivision.get(rawByShortName.get(r.name)) || '').toUpperCase() === 'INLAND');
@@ -892,21 +905,21 @@ class Component extends DCLogic {
     const missedByRegionMap = new Map();
     for (const r of filteredStoreRows) {
       if (r.visited) continue;
-      const k = r.region || 'UNKNOWN';
+      const k = normRegion(r.region);
       missedByRegionMap.set(k, (missedByRegionMap.get(k) || 0) + 1);
     }
     const maxMissed = Math.max(1, ...missedByRegionMap.values());
     const missedByRegionRows = [...missedByRegionMap.entries()]
-      .map(([name, missed]) => ({ name, missed, pct: Math.round(missed / maxMissed * 100) + '%' }))
+      .map(([name, missed]) => ({ name: SHORT_REGION_NAME[name] || name, missed, pct: Math.round(missed / maxMissed * 100) + '%' }))
       .sort((a, b) => b.missed - a.missed);
     // Same Inland/Coastal split as the region-attendance bars, keyed off
     // each missed store's own division field -- Carin, 2026-08-23.
     const missedRegionDivision = new Map();
     for (const r of filteredStoreRows) {
-      if (r.region && r.division && !missedRegionDivision.has(r.region)) missedRegionDivision.set(r.region, r.division);
+      if (r.region && r.division && !missedRegionDivision.has(normRegion(r.region))) missedRegionDivision.set(normRegion(r.region), r.division);
     }
-    const missedByRegionInland = missedByRegionRows.filter(m => (missedRegionDivision.get(m.name) || '').toUpperCase() === 'INLAND');
-    const missedByRegionCoastal = missedByRegionRows.filter(m => (missedRegionDivision.get(m.name) || '').toUpperCase() === 'COASTAL');
+    const missedByRegionInland = missedByRegionRows.filter(m => (missedRegionDivision.get(normRegion(m.name)) || '').toUpperCase() === 'INLAND');
+    const missedByRegionCoastal = missedByRegionRows.filter(m => (missedRegionDivision.get(normRegion(m.name)) || '').toUpperCase() === 'COASTAL');
     // % Attendance by Week by Region (Carin, 2026-08-29) -- built from
     // storeRows' real wk1Target/wk1Actual..wk5Target/wk5Actual (already in
     // the source data, per-store), respecting whatever filters are active
@@ -959,8 +972,9 @@ class Component extends DCLogic {
     const emptyWeekAgg = () => ({ 1: { target: 0, actual: 0 }, 2: { target: 0, actual: 0 }, 3: { target: 0, actual: 0 }, 4: { target: 0, actual: 0 }, 5: { target: 0, actual: 0 }, mtdTarget: 0, mtdActual: 0, notVisited: 0 });
     for (const r of filteredStoreRows) {
       if (s.weekSelectedRepTypes.length && !s.weekSelectedRepTypes.includes(r.repType)) continue;
-      const region = SHORT_REGION_NAME[r.region] || r.region;
-      if (!region || region === 'UNKNOWN') continue;
+      const normed = normRegion(r.region);
+      if (normed === 'UNKNOWN') continue;
+      const region = SHORT_REGION_NAME[normed] || normed;
       if (!newWeekByRegionMap.has(region)) newWeekByRegionMap.set(region, emptyWeekAgg());
       const e = newWeekByRegionMap.get(region);
       for (const w of [1, 2, 3, 4, 5]) {
@@ -1179,7 +1193,7 @@ class Component extends DCLogic {
     ]);
     const dailyRegionMap = new Map();
     for (const r of dayRows) {
-      const k = r.region || 'UNKNOWN';
+      const k = normRegion(r.region);
       if (!dailyRegionMap.has(k)) dailyRegionMap.set(k, { due: 0, done: 0 });
       const o = dailyRegionMap.get(k); o.due++; if (r.actual > 0) o.done++;
     }
