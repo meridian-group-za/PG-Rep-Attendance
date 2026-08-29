@@ -655,7 +655,7 @@ class Component extends DCLogic {
   state = {
     page: 'overview', month: 'AUG',
     region: 'ALL', banner: 'ALL', channel: 'ALL', manager: 'ALL', division: 'ALL', repType: 'ALL',
-    weekExcludedRepTypes: [],
+    weekSelectedRepTypes: [],
     search: '', dailySearch: '', storeSearch: '', date: null,
     paceDim: 'region',
     refreshing: false, refreshMsg: ''
@@ -893,19 +893,24 @@ class Component extends DCLogic {
     // Local multi-select rep-type pills, scoped to just this table (Carin,
     // 2026-08-29) -- separate from the global single-select "All rep
     // types" dropdown, which still applies first via filteredStoreRows.
-    // s.weekExcludedRepTypes holds what's toggled OFF; empty means every
-    // type shows, matching the table's behavior before these pills existed.
+    // s.weekSelectedRepTypes holds what's been picked; empty means no
+    // filter is applied at all (every type shows, matching the table's
+    // behavior before these pills existed) -- start unselected and click
+    // to build UP a selection, rather than starting with everything
+    // selected and clicking to remove (confirmed with Carin, 2026-08-29,
+    // the first version read as broken since every pill looked "on" at
+    // rest with no visible way to build a selection).
     const weekRepTypePills = repTypeOptions.map((t) => ({
-      label: t, active: !s.weekExcludedRepTypes.includes(t),
+      label: t, active: s.weekSelectedRepTypes.includes(t),
       toggle: () => {
-        const cur = s.weekExcludedRepTypes;
+        const cur = s.weekSelectedRepTypes;
         const next = cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t];
-        this.setState({ weekExcludedRepTypes: next });
+        this.setState({ weekSelectedRepTypes: next });
       },
     }));
     const weekByRegionMap = new Map();
     for (const r of filteredStoreRows) {
-      if (s.weekExcludedRepTypes.includes(r.repType)) continue;
+      if (s.weekSelectedRepTypes.length && !s.weekSelectedRepTypes.includes(r.repType)) continue;
       const region = SHORT_REGION_NAME[r.region] || r.region;
       if (!region || region === 'UNKNOWN') continue;
       if (!weekByRegionMap.has(region)) {
