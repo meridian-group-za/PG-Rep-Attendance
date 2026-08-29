@@ -281,7 +281,7 @@
 
         <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
           <h5 style="font-size:14px; margin-bottom:4px;">Line manager scorecard</h5>
-          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ managerCountLabel }} &middot; sorted by attendance % &middot; split across two columns so nothing scrolls</div>
+          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ managerCountLabel }} &middot; sorted by attendance %</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
             <table style="width:100%; border-collapse:collapse; font-size:11px;">
               <thead><tr>
@@ -333,39 +333,7 @@
             </table>
           </div>
         </div>
-
-        <sc-if value="{{ false }}" hint-placeholder-val="{{ false }}">
-          <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6);">
-          <div style="max-height:640px; overflow:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
-              <thead><tr>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:left; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Line Manager</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);"># Stores</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Target Visits</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Actual Visits</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Attendance MTD %</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Stores Not Visited</th>
-                <th style="position:sticky; top:0; background:var(--color-surface); text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">% Stores Not Visited</th>
-              </tr></thead>
-              <tbody>
-                <sc-for list="{{ managerRows }}" as="mgr" hint-placeholder-count="20">
-                  <tr class="nx-row">
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; color:var(--color-text); font-weight:500;">{{ mgr.name }}</td>
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; text-align:right; color:var(--color-neutral-200);">{{ mgr.storeCount }}</td>
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; text-align:right; color:var(--color-neutral-200);">{{ mgr.target }}</td>
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; text-align:right; color:var(--color-neutral-200);">{{ mgr.actual }}</td>
-                    <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:right; font-weight:700; color:#fff; background:{{ mgr.attendanceHeat }};">{{ mgr.progressLabel }}</div></td>
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; text-align:right; color:var(--color-neutral-200);">{{ mgr.notVisited }}</td>
-                    <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:right; font-weight:600; color:#fff; background:{{ mgr.notVisitedHeat }};">{{ mgr.pctNotVisited }}</div></td>
-                  </tr>
-                </sc-for>
-              </tbody>
-            </table>
-          </div>
-        </div>
       </sc-if>
-      </sc-if>
-      <!-- close-order note: inner sc-if (dead old manager table, value=false) closes first, then the outer isOverview sc-if. Both closes are adjacent above. -->
 
       <sc-if value="{{ isRoster }}" hint-placeholder-val="{{ false }}">
         <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:var(--space-6);">
