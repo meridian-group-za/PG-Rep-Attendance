@@ -349,7 +349,7 @@
             <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
               <thead>
                 <tr>
-                  <th colspan="3" style="text-align:center; padding:8px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--color-accent-300); background:rgba(236,109,37,0.14); border-bottom:2px solid var(--color-accent-700);">Rep Attendance (Dedicated &amp; FMs) &ndash; MTD</th>
+                  <th colspan="3" style="text-align:center; padding:8px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--color-accent-300); background:rgba(236,109,37,0.14); border-bottom:2px solid var(--color-accent-700);">{{ weekTableTitle }}</th>
                   <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="5">
                     <th style="text-align:center; padding:8px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#4FA3E3; background:rgba(79,163,227,0.14); border-bottom:2px solid #4FA3E3;">{{ wc.label }}</th>
                   </sc-for>
@@ -929,6 +929,13 @@ class Component extends DCLogic {
     // selected and clicking to remove (confirmed with Carin, 2026-08-29,
     // the first version read as broken since every pill looked "on" at
     // rest with no visible way to build a selection).
+    // Table title reflects whatever's actually selected in the pills below
+    // it (Carin, 2026-08-29: "can we make the title dynamic based on what
+    // you selecting") rather than a fixed "Dedicated & FMs" label that
+    // wouldn't match the real filter once someone picks something else.
+    const weekTableTitle = s.weekSelectedRepTypes.length
+      ? 'Rep Attendance (' + s.weekSelectedRepTypes.join(' & ') + ') – MTD'
+      : 'Rep Attendance (All Rep Types) – MTD';
     const weekRepTypePills = repTypeOptions.map((t) => {
       const active = s.weekSelectedRepTypes.includes(t);
       // Precomputed as plain strings, not a ternary inside {{ }} -- matches
@@ -1449,7 +1456,7 @@ class Component extends DCLogic {
       onRepType: (e) => this.setState({ repType: e.target.value }),
       kpis, paceBadge, timeGonePct, overallProgress,
       regionRows, regionRowsInland, regionRowsCoastal, repTypeRows, repTypeInsight, divisionRows, divisionInsight, divisionInsightLines, mapRows, missedByRegionRows, missedByRegionInland, missedByRegionCoastal,
-      weekColumns, weekByRegionRows, weekByRegionTotal, weekRepTypePills,
+      weekColumns, weekByRegionRows, weekByRegionTotal, weekRepTypePills, weekTableTitle,
       mapRef: this.mapRef, dailyMapRef: this.dailyMapRef,
       managerCountLabel: `${managerRows.length} manager${managerRows.length === 1 ? '' : 's'}`,
       managerRows, managerRowsA, managerRowsB,
