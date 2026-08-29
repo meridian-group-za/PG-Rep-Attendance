@@ -284,31 +284,6 @@
         </div>
 
         <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
-          <h5 style="font-size:14px; margin-bottom:4px;">% Attendance by Week by Region</h5>
-          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">Weekly target vs actual, by province &middot; &ge;95% green, 80&ndash;94% amber, &lt;80% red</div>
-          <div class="table-scroll" style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
-              <thead><tr>
-                <th style="text-align:left; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Region</th>
-                <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="4">
-                  <th style="text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">{{ wc.label }}</th>
-                </sc-for>
-              </tr></thead>
-              <tbody>
-                <sc-for list="{{ weekByRegionRows }}" as="r" hint-placeholder-count="9">
-                  <tr class="nx-row">
-                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; color:var(--color-text); font-weight:500;">{{ r.name }}</td>
-                    <sc-for list="{{ r.weeks }}" as="w" hint-placeholder-count="4">
-                      <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:right; font-weight:700; color:#fff; background:{{ w.color }};">{{ w.label }}</div></td>
-                    </sc-for>
-                  </tr>
-                </sc-for>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
           <h5 style="font-size:14px; margin-bottom:4px;">Line manager scorecard</h5>
           <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ managerCountLabel }} &middot; sorted by attendance %</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
@@ -356,6 +331,31 @@
                     <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:6px 7px; text-align:right; font-weight:700; color:#fff; background:{{ mgr.attendanceHeat }};">{{ mgr.progressLabel }}</div></td>
                     <td style="padding:6px 7px; border-bottom:1px solid #1c3f6b; text-align:right; color:var(--color-neutral-200);">{{ mgr.notVisited }}</td>
                     <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:6px 7px; text-align:right; font-weight:600; color:#fff; background:{{ mgr.notVisitedHeat }};">{{ mgr.pctNotVisited }}</div></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
+          <h5 style="font-size:14px; margin-bottom:4px;">% Attendance by Week by Region</h5>
+          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">Weekly target vs actual, by province &middot; &ge;95% green, 80&ndash;94% amber, &lt;80% red</div>
+          <div class="table-scroll" style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+              <thead><tr>
+                <th style="text-align:left; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Region</th>
+                <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="4">
+                  <th style="text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">{{ wc.label }}</th>
+                </sc-for>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ weekByRegionRows }}" as="r" hint-placeholder-count="9">
+                  <tr class="nx-row">
+                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; color:var(--color-text); font-weight:500;">{{ r.name }}</td>
+                    <sc-for list="{{ r.weeks }}" as="w" hint-placeholder-count="4">
+                      <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:right; font-weight:700; color:#fff; background:{{ w.color }};">{{ w.label }}</div></td>
+                    </sc-for>
                   </tr>
                 </sc-for>
               </tbody>
