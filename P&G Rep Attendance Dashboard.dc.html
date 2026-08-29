@@ -349,42 +349,42 @@
             <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
               <thead>
                 <tr>
-                  <th colspan="3" style="text-align:center; padding:8px; font-size:12px; font-weight:800; color:#0a1c3a; background:#F5A623; border:1px solid #0a1c3a;">Rep Attendance (Dedicated &amp; FMs) &ndash; MTD</th>
+                  <th colspan="3" style="text-align:center; padding:8px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--color-accent-300); background:rgba(236,109,37,0.14); border-bottom:2px solid var(--color-accent-700);">Rep Attendance (Dedicated &amp; FMs) &ndash; MTD</th>
                   <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="5">
-                    <th style="text-align:center; padding:8px; font-size:12px; font-weight:800; color:#fff; background:#2E86C1; border:1px solid #0a1c3a;">{{ wc.label }}</th>
+                    <th style="text-align:center; padding:8px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#4FA3E3; background:rgba(79,163,227,0.14); border-bottom:2px solid #4FA3E3;">{{ wc.label }}</th>
                   </sc-for>
                 </tr>
                 <tr>
-                  <th style="text-align:left; padding:7px 8px; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:#0a1c3a; background:#D9D9D9; border:1px solid #0a1c3a;">Region</th>
-                  <th style="text-align:center; padding:7px 8px; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:#0a1c3a; background:#D9D9D9; border:1px solid #0a1c3a;">Stores not visited at all</th>
-                  <th style="text-align:center; padding:7px 8px; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:#0a1c3a; background:#D9D9D9; border:1px solid #0a1c3a;">% Attendance</th>
+                  <th style="text-align:left; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Region</th>
+                  <th style="text-align:center; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Stores not visited at all</th>
+                  <th style="text-align:center; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">% Attendance</th>
                   <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="5">
-                    <th style="text-align:center; padding:7px 8px; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:#0a1c3a; background:#D9D9D9; border:1px solid #0a1c3a;">% Attendance</th>
+                    <th style="text-align:center; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">% Attendance</th>
                   </sc-for>
                 </tr>
               </thead>
               <tbody>
                 <sc-for list="{{ weekByRegionRows }}" as="r" hint-placeholder-count="9">
-                  <tr>
-                    <td style="padding:7px 8px; border:1px solid #b9c2cc; color:#1a4a8a; font-weight:700; background:#fff;">{{ r.name }}</td>
-                    <td style="padding:5px 8px; border:1px solid #b9c2cc; background:#fff;">
-                      <div style="position:relative; height:18px; width:100%; background:#f2f2f2; border-radius:2px; overflow:hidden;">
-                        <div style="height:100%; width:{{ r.notVisitedBarPct }}; background:#F44336;"></div>
-                        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:700; color:#0a1c3a; font-size:11px;">{{ r.notVisited }}</div>
+                  <tr class="nx-row">
+                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; color:var(--color-text); font-weight:500;">{{ r.name }}</td>
+                    <td style="padding:5px 8px; border-bottom:1px solid #1c3f6b;">
+                      <div style="position:relative; height:16px; width:100%; background:var(--color-neutral-800); border-radius:3px; overflow:hidden;">
+                        <div style="height:100%; width:{{ r.notVisitedBarPct }}; background:#D94F3A;"></div>
+                        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:10.5px;">{{ r.notVisited }}</div>
                       </div>
                     </td>
-                    <td style="padding:0; border:1px solid #b9c2cc;"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#0a1c3a; background:{{ r.mtd.color }};">{{ r.mtd.label }}</div></td>
+                    <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#fff; background:{{ r.mtd.color }};">{{ r.mtd.label }}</div></td>
                     <sc-for list="{{ r.weeks }}" as="w" hint-placeholder-count="5">
-                      <td style="padding:0; border:1px solid #b9c2cc;"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#0a1c3a; background:{{ w.color }};">{{ w.label }}</div></td>
+                      <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#fff; background:{{ w.color }};">{{ w.label }}</div></td>
                     </sc-for>
                   </tr>
                 </sc-for>
                 <tr>
-                  <td style="padding:7px 8px; border:1px solid #0a1c3a; color:#0a1c3a; font-weight:800; background:#D9D9D9;">TOTAL</td>
-                  <td style="padding:7px 8px; border:1px solid #0a1c3a; text-align:center; font-weight:800; color:#0a1c3a; background:#D9D9D9;">{{ weekByRegionTotal.notVisited }}</td>
-                  <td style="padding:0; border:1px solid #0a1c3a;"><div style="padding:7px 8px; text-align:center; font-weight:800; color:#0a1c3a; background:{{ weekByRegionTotal.mtd.color }};">{{ weekByRegionTotal.mtd.label }}</div></td>
+                  <td style="padding:7px 8px; border-top:2px solid var(--color-neutral-800); color:var(--color-text); font-weight:700; background:var(--color-neutral-900);">TOTAL</td>
+                  <td style="padding:7px 8px; border-top:2px solid var(--color-neutral-800); text-align:center; font-weight:700; color:var(--color-text); background:var(--color-neutral-900);">{{ weekByRegionTotal.notVisited }}</td>
+                  <td style="padding:0; border-top:2px solid var(--color-neutral-800);"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#fff; background:{{ weekByRegionTotal.mtd.color }};">{{ weekByRegionTotal.mtd.label }}</div></td>
                   <sc-for list="{{ weekByRegionTotal.weeks }}" as="w" hint-placeholder-count="5">
-                    <td style="padding:0; border:1px solid #0a1c3a;"><div style="padding:7px 8px; text-align:center; font-weight:800; color:#0a1c3a; background:{{ w.color }};">{{ w.label }}</div></td>
+                    <td style="padding:0; border-top:2px solid var(--color-neutral-800);"><div style="padding:7px 8px; text-align:center; font-weight:700; color:#fff; background:{{ w.color }};">{{ w.label }}</div></td>
                   </sc-for>
                 </tr>
               </tbody>
@@ -967,7 +967,7 @@ class Component extends DCLogic {
     const weekColumns = activeWeeks.map(w => ({ label: 'Week ' + w }));
     const maxNotVisited = Math.max(1, ...[...newWeekByRegionMap.values()].map(e => e.notVisited));
     const pctCell = (target, actual) => {
-      if (target <= 0) return { label: '—', color: '#f2f2f2' };
+      if (target <= 0) return { label: '—', color: 'var(--color-neutral-800)' };
       const pct = Math.round(actual / target * 100);
       return { label: pct + '%', color: weekPctColor(pct) };
     };
