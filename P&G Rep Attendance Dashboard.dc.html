@@ -818,20 +818,40 @@ class Component extends DCLogic {
     // confirmed it exists; do not derive this from banner). Older cached
     // months refreshed before this field was added will have channel:null
     // on every row -- filtered out here same as other blank fields.
-    const channelOptions = [...new Set(D.mtdReps.map(r => r.channel))].filter(Boolean).sort();
+    //
+    // Sourced from storeRows, not mtdReps: confirmed live 2026-08-29
+    // (Carin: "North West not appearing under Pharmacy-PHC", then a real
+    // screenshot proving North West DOES have exact "PHARMACY - PHC" rows)
+    // -- a single rep genuinely covers multiple channels across their
+    // different stores (e.g. Kabelo Phiri has both RETAIL and PHARMACY -
+    // PHC stores), so mtdReps' one-channel-per-rep field only ever
+    // captured whichever store happened to be first in the sheet for that
+    // rep, silently hiding every other channel they actually operate in.
+    const channelOptions = [...new Set((D.storeRows || []).map(r => r.channel))].filter(Boolean).sort();
     const managerOptions = [...new Set(D.mtdReps.map(r => r.lineManager))].filter(Boolean).sort();
     const divisionOptions = [...new Set(D.mtdReps.map(r => r.division))].filter(Boolean).sort();
     const repTypeOptions = [...new Set(D.mtdReps.map(r => r.repType))].filter(Boolean).sort();
 
-    const matchesGlobal = (r) =>
+    // empId -> Set of every channel that rep has at least one store in.
+    // Used only for rep-level channel matching (see matchesGlobal below) --
+    // store-level rows (storeRows/dailyRows) still match their own real
+    // per-row channel directly, which is accurate.
+    const repChannelSet = new Map();
+    for (const r of (D.storeRows || [])) {
+      if (!r.channel) continue;
+      if (!repChannelSet.has(r.empId)) repChannelSet.set(r.empId, new Set());
+      repChannelSet.get(r.empId).add(r.channel);
+    }
+
+    const matchesGlobal = (r, isRepLevel) =>
       (s.region === 'ALL' || r.region === s.region) &&
       (s.banner === 'ALL' || r.banner === s.banner) &&
-      (s.channel === 'ALL' || r.channel === s.channel) &&
+      (s.channel === 'ALL' || (isRepLevel ? (repChannelSet.get(r.empId) || new Set()).has(s.channel) : r.channel === s.channel)) &&
       (s.manager === 'ALL' || r.lineManager === s.manager) &&
       (s.division === 'ALL' || r.division === s.division) &&
       (s.repType === 'ALL' || r.repType === s.repType);
 
-    const filteredReps = D.mtdReps.filter(matchesGlobal);
+    const filteredReps = D.mtdReps.filter((r) => matchesGlobal(r, true));
     const totalTarget = filteredReps.reduce((a, r) => a + r.target, 0);
     const totalActual = filteredReps.reduce((a, r) => a + r.actual, 0);
     const overallProgress = totalTarget > 0 ? +(totalActual / totalTarget * 100).toFixed(1) : 0;
