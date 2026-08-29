@@ -857,7 +857,15 @@ class Component extends DCLogic {
     const overallProgress = totalTarget > 0 ? +(totalActual / totalTarget * 100).toFixed(1) : 0;
     const timeGonePct = D.meta.timeGone.pct;
     const activeReps = filteredReps.filter(r => r.actual > 0).length;
-    const filteredStoreRows = (D.storeRows || []).filter(matchesGlobal);
+    // Wrapped in an arrow, not passed bare -- Array.filter calls its
+    // callback with (element, index, array), so `.filter(matchesGlobal)`
+    // directly was silently passing the array INDEX as isRepLevel for
+    // every row after the first (a truthy number for index >= 1), wrongly
+    // taking the rep-level channel branch instead of checking each row's
+    // own real channel. That's why channel-filtered numbers barely moved
+    // (Carin, 2026-08-29: "fm % attendance shows the same regardless of
+    // channel selected", confirmed still true even in incognito).
+    const filteredStoreRows = (D.storeRows || []).filter((r) => matchesGlobal(r));
     const storesNotVisited = filteredStoreRows.filter(r => !r.visited).length;
     const pctStoresNotVisited = filteredStoreRows.length > 0 ? +(storesNotVisited / filteredStoreRows.length * 100).toFixed(1) : 0;
 
