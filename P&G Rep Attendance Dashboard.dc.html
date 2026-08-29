@@ -880,15 +880,28 @@ class Component extends DCLogic {
       // 9 + 4 reps), which otherwise splits into two separate rows instead
       // of merging (Carin, 2026-08-29: "PE twice in % attendance by
       // region?"). Uppercase also matches SHORT_REGION_NAME's own keys.
+      //
+      // Sums target/actual from filteredStoreRows (per-store, channel-
+      // accurate), NOT from filteredReps' pre-aggregated rep-level totals.
+      // Confirmed live 2026-08-29 (Carin: "how can fieldmarketers be 86.6%
+      // across all channels?"): a rep's target/actual on mtdReps is summed
+      // across their ENTIRE portfolio regardless of channel, so even after
+      // fixing which reps qualify for a channel (repChannelSet), the
+      // percentage itself never moved -- all 19 Fieldmarketers have stores
+      // in both channels, so the same 19 always qualified, and their
+      // combined-both-channels total never changed. Re-aggregating from
+      // storeRows directly (each row already carries its own real channel)
+      // gives an actually channel-specific percentage. Reps counted as
+      // distinct empIds, since one rep has many store rows.
       const m = new Map();
-      for (const r of filteredReps) {
+      for (const r of filteredStoreRows) {
         const raw = r[key] || 'UNKNOWN';
         const k = raw.toString().trim().toUpperCase();
         if (k === 'UNKNOWN') continue;
-        if (!m.has(k)) m.set(k, { name: k, target: 0, actual: 0, reps: 0 });
-        const o = m.get(k); o.target += r.target; o.actual += r.actual; o.reps++;
+        if (!m.has(k)) m.set(k, { name: k, target: 0, actual: 0, repIds: new Set() });
+        const o = m.get(k); o.target += r.target || 0; o.actual += r.actual || 0; o.repIds.add(r.empId);
       }
-      return [...m.values()].map(o => ({ ...o, progress: o.target > 0 ? +(o.actual / o.target * 100).toFixed(1) : 0 }));
+      return [...m.values()].map(o => ({ name: o.name, target: o.target, actual: o.actual, reps: o.repIds.size, progress: o.target > 0 ? +(o.actual / o.target * 100).toFixed(1) : 0 }));
     };
 
     const colorFor = (p) => this.statusFor(p, timeGonePct).color;
