@@ -284,6 +284,31 @@
         </div>
 
         <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
+          <h5 style="font-size:14px; margin-bottom:4px;">% Attendance by Week by Region</h5>
+          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">Weekly target vs actual, by province &middot; &ge;95% green, 80&ndash;94% amber, &lt;80% red</div>
+          <div class="table-scroll" style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+              <thead><tr>
+                <th style="text-align:left; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">Region</th>
+                <sc-for list="{{ weekColumns }}" as="wc" hint-placeholder-count="4">
+                  <th style="text-align:right; padding:7px 8px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800);">{{ wc.label }}</th>
+                </sc-for>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ weekByRegionRows }}" as="r" hint-placeholder-count="9">
+                  <tr class="nx-row">
+                    <td style="padding:7px 8px; border-bottom:1px solid #1c3f6b; color:var(--color-text); font-weight:500;">{{ r.name }}</td>
+                    <sc-for list="{{ r.weeks }}" as="w" hint-placeholder-count="4">
+                      <td style="padding:0; border-bottom:1px solid #1c3f6b;"><div style="padding:7px 8px; text-align:right; font-weight:700; color:#fff; background:{{ w.color }};">{{ w.label }}</div></td>
+                    </sc-for>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
           <h5 style="font-size:14px; margin-bottom:4px;">Line manager scorecard</h5>
           <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ managerCountLabel }} &middot; sorted by attendance %</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
@@ -852,6 +877,40 @@ class Component extends DCLogic {
     }
     const missedByRegionInland = missedByRegionRows.filter(m => (missedRegionDivision.get(m.name) || '').toUpperCase() === 'INLAND');
     const missedByRegionCoastal = missedByRegionRows.filter(m => (missedRegionDivision.get(m.name) || '').toUpperCase() === 'COASTAL');
+    // % Attendance by Week by Region (Carin, 2026-08-29) -- built from
+    // storeRows' real wk1Target/wk1Actual..wk5Target/wk5Actual (already in
+    // the source data, per-store), respecting whatever filters are active
+    // via filteredStoreRows. Week 5 only exists in longer months, so only
+    // show week columns that have any real target anywhere this month
+    // rather than always rendering 5 and leaving some entirely blank.
+    const weekPctColor = (pct) => pct >= 95 ? '#22C55E' : pct >= 80 ? '#E8A838' : '#D94F3A';
+    const weekByRegionMap = new Map();
+    for (const r of filteredStoreRows) {
+      const region = SHORT_REGION_NAME[r.region] || r.region;
+      if (!region || region === 'UNKNOWN') continue;
+      if (!weekByRegionMap.has(region)) {
+        weekByRegionMap.set(region, { 1: { target: 0, actual: 0 }, 2: { target: 0, actual: 0 }, 3: { target: 0, actual: 0 }, 4: { target: 0, actual: 0 }, 5: { target: 0, actual: 0 } });
+      }
+      const e = weekByRegionMap.get(region);
+      for (const w of [1, 2, 3, 4, 5]) {
+        e[w].target += r['wk' + w + 'Target'] || 0;
+        e[w].actual += r['wk' + w + 'Actual'] || 0;
+      }
+    }
+    const activeWeeks = [1, 2, 3, 4, 5].filter(w => [...weekByRegionMap.values()].some(e => e[w].target > 0));
+    const weekColumns = activeWeeks.map(w => ({ label: 'Week ' + w }));
+    const weekByRegionRows = [...weekByRegionMap.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([name, e]) => ({
+        name,
+        weeks: activeWeeks.map(w => {
+          const { target, actual } = e[w];
+          if (target <= 0) return { label: '—', color: 'var(--color-neutral-700)' };
+          const pct = Math.round(actual / target * 100);
+          return { label: pct + '%', color: weekPctColor(pct) };
+        }),
+      }));
+
     const bannerRows = rowify(aggBy('banner'));
     const repTypeAgg = aggBy('repType');
     const repTypeRows = rowify(repTypeAgg).map(row => {
@@ -1307,6 +1366,7 @@ class Component extends DCLogic {
       onRepType: (e) => this.setState({ repType: e.target.value }),
       kpis, paceBadge, timeGonePct, overallProgress,
       regionRows, regionRowsInland, regionRowsCoastal, repTypeRows, repTypeInsight, divisionRows, divisionInsight, divisionInsightLines, mapRows, missedByRegionRows, missedByRegionInland, missedByRegionCoastal,
+      weekColumns, weekByRegionRows,
       mapRef: this.mapRef, dailyMapRef: this.dailyMapRef,
       managerCountLabel: `${managerRows.length} manager${managerRows.length === 1 ? '' : 's'}`,
       managerRows, managerRowsA, managerRowsB,
