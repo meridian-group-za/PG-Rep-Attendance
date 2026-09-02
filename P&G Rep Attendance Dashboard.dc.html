@@ -32,6 +32,7 @@
      (Carin, 2026-08-26) -->
 <script>document.write('<script src="./attendance-data.js?v=' + Date.now() + '"><\/script>');</script>
 <script>document.write('<script src="./attendance-data-jul.js?v=' + Date.now() + '"><\/script>');</script>
+<script>document.write('<script src="./attendance-data-sep26.js?v=' + Date.now() + '"><\/script>');</script>
 </head>
 <body>
 <x-dc>
@@ -788,8 +789,9 @@ class Component extends DCLogic {
     // "South Africa Visit Plan" sheet of that month's workbook via
     // extract_month.py. Adding a month = run the script + add one line
     // here (Carin, 2026-08-23).
-    const MONTH_DATA = { AUG: window.ATTENDANCE_DATA, JUL: window.ATTENDANCE_DATA_JUL };
+    const MONTH_DATA = { SEP: window.ATTENDANCE_DATA_SEP26, AUG: window.ATTENDANCE_DATA, JUL: window.ATTENDANCE_DATA_JUL };
     const monthOptions = [
+      { value: 'SEP', label: 'September 2026' },
       { value: 'AUG', label: 'August 2026' },
       { value: 'JUL', label: 'July 2026' }
     ];
