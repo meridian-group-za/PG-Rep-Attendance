@@ -808,6 +808,37 @@ class Component extends DCLogic {
     return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
   }
 
+  dayHeatColor(pct, invert) {
+    // Absolute scale for SINGLE-DAY numbers, deliberately not heatColor's
+    // pace benchmark (Carin, 2026-09-03: "conditional formatting also
+    // looks wrong" -- managers on 100% of the day's visits were rendering
+    // amber). heatColor grades against timeGonePct, i.e. how far through
+    // the MONTH we are, which is the right yardstick for cumulative MTD
+    // progress but meaningless within one day: on the 31st the benchmark
+    // sits at ~100%, so a perfect day scored gap 0 = "on pace" = amber,
+    // and everything under 100% slid straight to red.
+    //
+    // A day's attendance is self-contained, so grade it absolutely, on
+    // the same 50/80 convention the rest of the Daily page already uses
+    // for its KPI tiles, rep-type chips and banner rows.
+    let p = Math.max(0, Math.min(100, pct));
+    if (invert) p = 100 - p;
+    const stops = [
+      [50, [217, 79, 58]],   // #D94F3A red   -- half the day's visits missed
+      [75, [232, 168, 56]],  // #E8A838 amber
+      [100, [34, 197, 94]]   // #22C55E green -- every scheduled visit done
+    ];
+    const v = Math.max(stops[0][0], Math.min(100, p));
+    let lo = stops[0], hi = stops[stops.length - 1];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (v >= stops[i][0] && v <= stops[i + 1][0]) { lo = stops[i]; hi = stops[i + 1]; break; }
+    }
+    const span = hi[0] - lo[0];
+    const f = span > 0 ? (v - lo[0]) / span : 0;
+    const rgb = lo[1].map((c, i) => Math.round(c + (hi[1][i] - c) * f));
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  }
+
   fmtDate(iso) {
     const d = new Date(iso + 'T00:00:00Z');
     return d.toLocaleDateString('en-ZA', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -1329,9 +1360,9 @@ class Component extends DCLogic {
       const missedPct = o.due > 0 ? Math.round(notVisited / o.due * 100) : 0;
       return {
         name, target: o.due, actual: o.done, attendancePct: pct + '%',
-        attendanceHeat: this.heatColor(pct, false, timeGonePct),
+        attendanceHeat: this.dayHeatColor(pct, false),
         notVisited, missedPct: missedPct + '%',
-        missedHeat: this.heatColor(missedPct, true, timeGonePct)
+        missedHeat: this.dayHeatColor(missedPct, true)
       };
     }).sort((a, b) => parseInt(b.attendancePct) - parseInt(a.attendancePct));
 
