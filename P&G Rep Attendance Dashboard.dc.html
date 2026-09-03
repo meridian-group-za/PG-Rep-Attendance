@@ -615,6 +615,31 @@
           </div>
         </div>
 
+        <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
+          <h5 style="font-size:14px; margin-bottom:4px;">Stores not visited</h5>
+          <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ dailyNotVisitedCountLabel }} &middot; scheduled on the selected day with no visit recorded &middot; grouped by line manager, then rep</div>
+          <div style="max-height:420px; overflow-y:auto; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:11px;">
+              <thead><tr>
+                <th style="text-align:left; padding:6px 7px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800); position:sticky; top:0; background:var(--color-surface);">Rep Name</th>
+                <th style="text-align:left; padding:6px 7px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800); position:sticky; top:0; background:var(--color-surface);">Manager Name</th>
+                <th style="text-align:left; padding:6px 7px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800); position:sticky; top:0; background:var(--color-surface);">Store Name</th>
+                <th style="text-align:left; padding:6px 7px; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--color-neutral-500); border-bottom:1px solid var(--color-neutral-800); position:sticky; top:0; background:var(--color-surface);">Region</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ dailyNotVisitedRows }}" as="nv" hint-placeholder-count="12">
+                  <tr class="nx-row">
+                    <td style="padding:6px 7px; border-bottom:1px solid #1c3f6b; color:var(--color-neutral-200); color:var(--color-text); font-weight:500;">{{ nv.repName }}</td>
+                    <td style="padding:6px 7px; border-bottom:1px solid #1c3f6b; color:var(--color-neutral-200);">{{ nv.lineManager }}</td>
+                    <td style="padding:6px 7px; border-bottom:1px solid #1c3f6b; color:var(--color-neutral-200);">{{ nv.store }}</td>
+                    <td style="padding:6px 7px; border-bottom:1px solid #1c3f6b; color:var(--color-neutral-200);">{{ nv.region }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </sc-if>
 
       <sc-if value="{{ isStores }}" hint-placeholder-val="{{ false }}">
@@ -1366,6 +1391,30 @@ class Component extends DCLogic {
     const dailyManagerRowsA = dailyManagerRows.filter((_, i) => i % 2 === 0);
     const dailyManagerRowsB = dailyManagerRows.filter((_, i) => i % 2 === 1);
 
+    // Bottom-of-page list of the individual stores that were due on the
+    // selected day but not visited (Carin, 2026-09-03). Everything above
+    // this point counts missed visits in aggregate -- by region, manager,
+    // division -- with no way to see WHICH stores they were. Built off
+    // dayRows, so it inherits the selected date, the global filters and
+    // the page's own search box exactly like every other Daily tile.
+    // Region goes through normRegion + SHORT_REGION_NAME for the same
+    // mixed-casing reason as the rest of this page.
+    const dailyNotVisitedRows = dayRows
+      .filter(r => !(r.actual > 0))
+      .map(r => {
+        const reg = normRegion(r.region);
+        return {
+          repName: r.name || '—',
+          lineManager: r.lineManager || '—',
+          store: r.store || '—',
+          region: SHORT_REGION_NAME[reg] || (reg === 'UNKNOWN' ? '—' : reg)
+        };
+      })
+      .sort((a, b) =>
+        a.lineManager.localeCompare(b.lineManager) ||
+        a.repName.localeCompare(b.repName) ||
+        a.store.localeCompare(b.store));
+
     const dailyBannerMap = new Map();
     for (const r of dayRows) {
       const k = r.banner || 'UNKNOWN';
@@ -1528,6 +1577,8 @@ class Component extends DCLogic {
       benchY, chartW, padX, chartRight, trendBars, trendDayCount, trendInsight, dailyRepRows, dailyMapRows, dailyRepTypeRows, dailyDivisionRows, dailyManagerRows,
       dailyRegionRowsInland, dailyRegionRowsCoastal, dailyRepTypeRowsChips, dailyRepTypeInsight, dailyDivisionInsightLines,
       dailyMissedByRegionInland, dailyMissedByRegionCoastal, dailyManagerRowsA, dailyManagerRowsB,
+      dailyNotVisitedRows,
+      dailyNotVisitedCountLabel: `${dailyNotVisitedRows.length} store${dailyNotVisitedRows.length === 1 ? '' : 's'}`,
       dailyManagerCountLabel: `${dailyManagerRows.length} manager${dailyManagerRows.length === 1 ? '' : 's'}`,
       storeSearch: s.storeSearch, onStoreSearch: (e) => this.setState({ storeSearch: e.target.value }),
       storeCountLabel: `${storeDetailRows.length} store${storeDetailRows.length === 1 ? '' : 's'}`,
