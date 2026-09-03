@@ -616,7 +616,12 @@
         </div>
 
         <div class="nx-card" style="background:var(--color-surface); border:1px solid var(--color-neutral-800); border-radius:var(--radius-lg); padding:var(--space-6); margin-bottom:var(--space-6);">
-          <h5 style="font-size:14px; margin-bottom:4px;">Stores not visited</h5>
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
+            <h5 style="font-size:14px;">Stores not visited</h5>
+            <button onClick="{{ onExportNotVisited }}" style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer; font-family:inherit; border:1px solid rgba(34,197,94,.4); background:rgba(34,197,94,.14); color:#7EE0A6; white-space:nowrap;">
+              <i class="ph ph-file-xls" style="font-size:14px;"></i>Export to Excel
+            </button>
+          </div>
           <div style="font-size:10.5px; color:var(--color-neutral-500); margin-bottom:var(--space-4);">{{ dailyNotVisitedCountLabel }} &middot; scheduled on the selected day with no visit recorded &middot; grouped by line manager, then rep</div>
           <div style="max-height:420px; overflow-y:auto; overflow-x:auto;">
             <table style="width:100%; border-collapse:collapse; font-size:11px;">
@@ -1415,6 +1420,16 @@ class Component extends DCLogic {
         a.repName.localeCompare(b.repName) ||
         a.store.localeCompare(b.store));
 
+    // Exports exactly what the table is showing (same date, filters and
+    // search), not the whole month -- same rule as the other two export
+    // buttons on this dashboard. CSV rather than real .xlsx for the
+    // reason documented on exportRowsToCsv.
+    const onExportNotVisited = () => this.exportRowsToCsv(
+      `Stores_Not_Visited_${date}.csv`,
+      ['Rep Name', 'Manager Name', 'Store Name', 'Region'],
+      dailyNotVisitedRows.map(r => [r.repName, r.lineManager, r.store, r.region])
+    );
+
     const dailyBannerMap = new Map();
     for (const r of dayRows) {
       const k = r.banner || 'UNKNOWN';
@@ -1578,6 +1593,7 @@ class Component extends DCLogic {
       dailyRegionRowsInland, dailyRegionRowsCoastal, dailyRepTypeRowsChips, dailyRepTypeInsight, dailyDivisionInsightLines,
       dailyMissedByRegionInland, dailyMissedByRegionCoastal, dailyManagerRowsA, dailyManagerRowsB,
       dailyNotVisitedRows,
+      onExportNotVisited,
       dailyNotVisitedCountLabel: `${dailyNotVisitedRows.length} store${dailyNotVisitedRows.length === 1 ? '' : 's'}`,
       dailyManagerCountLabel: `${dailyManagerRows.length} manager${dailyManagerRows.length === 1 ? '' : 's'}`,
       storeSearch: s.storeSearch, onStoreSearch: (e) => this.setState({ storeSearch: e.target.value }),
