@@ -6,6 +6,15 @@ def d2s(v):
         return v.date().isoformat()
     if isinstance(v, date):
         return v.isoformat()
+    if isinstance(v, str):
+        # Some months' "Day" column comes through as text (e.g. "9/01/2026")
+        # instead of a real Excel date -- normalise it the same way, so the
+        # dashboard's date sort/format never has to know which month behaved.
+        for fmt in ('%m/%d/%Y', '%d/%m/%Y', '%Y-%m-%d'):
+            try:
+                return datetime.strptime(v.strip(), fmt).date().isoformat()
+            except ValueError:
+                continue
     return v
 
 def extract(path, month_code):
