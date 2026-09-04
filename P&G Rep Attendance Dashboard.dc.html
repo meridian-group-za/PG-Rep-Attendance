@@ -19,20 +19,11 @@
     }
   })();
 </script>
-<!-- Cache-busted so the browser (and GitHub Pages' CDN) can never serve a
-     stale cached copy -- a plain <script src="./attendance-data.js"> with
-     a fixed URL was being cached across page reloads on some machines, so
-     a refresh could succeed on the backend (new commit landed on GitHub)
-     while the viewer's own browser kept showing old numbers until a hard
-     refresh. document.write from an inline script at this exact position
-     inserts the tag synchronously, in place, so load order is unaffected
-     -- must live in this plain <head>, NOT inside the <helmet> block
-     further down, which has its own custom script-handling that silently
-     broke when given a script tag with no `src` attribute (blank page).
-     (Carin, 2026-08-26) -->
-<script>document.write('<script src="./attendance-data.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="./attendance-data-jul.js?v=' + Date.now() + '"><\/script>');</script>
-<script>document.write('<script src="./attendance-data-sep26.js?v=' + Date.now() + '"><\/script>');</script>
+<!-- Every month's data file is now loaded dynamically in componentDidMount,
+     driven entirely by manifest.json (which the Azure Function keeps
+     up to date) -- see that function for the cache-busting + dynamic
+     <script> injection. Nothing here needs editing when a new month
+     appears; that was the whole point of this change. (2026-09-04) -->
 </head>
 <body>
 <x-dc>
@@ -708,7 +699,14 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = {
-    page: 'overview', month: 'AUG',
+    page: 'overview', month: null,
+    // Data-driven from manifest.json (written by the Azure Function that
+    // refreshes this dashboard) instead of hardcoded -- a brand-new month
+    // shows up in the dropdown on its own after the next refresh, with no
+    // edit to this file. Starts empty; componentDidMount fills it in.
+    // (2026-09-04, replacing the old hardcoded MONTH_DATA/monthOptions,
+    // which needed a manual two-line edit here every single month.)
+    monthManifest: [],
     region: 'ALL', banner: 'ALL', channel: 'ALL', manager: 'ALL', division: 'ALL', repType: 'ALL',
     weekSelectedRepTypes: [],
     search: '', dailySearch: '', storeSearch: '', date: null,
@@ -737,6 +735,26 @@ class Component extends DCLogic {
 
   componentDidMount() {
     if (super.componentDidMount) super.componentDidMount();
+    // Month list is data-driven from manifest.json (written by the Azure
+    // Function's pg_attendance_daily_refresh/pg_attendance_manual_refresh) --
+    // load every month's data file dynamically and merge the manifest into
+    // state once all of them have loaded. Cache-busted per-file so GitHub
+    // Pages' CDN can never serve a stale copy after a refresh (the same
+    // problem the old static <script> tags were cache-busted against).
+    // Falls back to an empty month list, silently, if manifest.json 404s or
+    // the fetch fails -- must not crash the whole dashboard just because
+    // the manifest isn't there yet. (2026-09-04)
+    fetch('./manifest.json').then(r => r.ok ? r.json() : []).catch(() => []).then(manifest => {
+      Promise.all(manifest.map(m => new Promise(resolve => {
+        if (window[m.var]) { resolve(); return; }
+        const el = document.createElement('script');
+        el.src = './' + m.file + '?v=' + Date.now();
+        el.onload = resolve; el.onerror = resolve;
+        document.head.appendChild(el);
+      }))).then(() => {
+        this.setState({ monthManifest: manifest });
+      });
+    });
     window.addEventListener('message', (e) => {
       if (!e.data || e.data.type !== 'pg-map-ready') return;
       // Both map iframes load the identical pg-province-map.html and send
@@ -845,19 +863,20 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    // Month registry -- each month is its own baked-in data file
-    // (attendance-data.js / attendance-data-jul.js), regenerated from the
-    // "South Africa Visit Plan" sheet of that month's workbook via
-    // extract_month.py. Adding a month = run the script + add one line
-    // here (Carin, 2026-08-23).
-    const MONTH_DATA = { SEP: window.ATTENDANCE_DATA_SEP26, AUG: window.ATTENDANCE_DATA, JUL: window.ATTENDANCE_DATA_JUL };
-    const monthOptions = [
-      { value: 'SEP', label: 'September 2026' },
-      { value: 'AUG', label: 'August 2026' },
-      { value: 'JUL', label: 'July 2026' }
-    ];
+    // Month registry -- driven entirely by state.monthManifest (loaded from
+    // manifest.json in componentDidMount), NOT hardcoded. Newest month first,
+    // sorted by each entry's own sourceModified rather than its code string
+    // (a plain alphabetical sort of codes like "DEC26"/"JAN26" would not
+    // land in calendar order). Adding a month now needs no edit here at all
+    // -- it's picked up automatically the next time the Azure Function runs.
+    // (2026-09-04, replacing the old hardcoded MONTH_DATA/monthOptions.)
     const s = this.state;
-    const D = MONTH_DATA[s.month || 'AUG'];
+    const sortedManifest = s.monthManifest.slice().sort((a, b) =>
+      (b.sourceModified || '').localeCompare(a.sourceModified || ''));
+    const MONTH_DATA = {};
+    for (const m of sortedManifest) MONTH_DATA[m.code] = window[m.var];
+    const monthOptions = sortedManifest.map(m => ({ value: m.code, label: m.label }));
+    const D = MONTH_DATA[s.month] || MONTH_DATA[monthOptions[0] && monthOptions[0].value];
     if (!D) return {};
     const date = (s.date && D.dates.includes(s.date)) ? s.date : D.dates[D.dates.length - 1];
     const monthLabel = new Date(D.meta.timeGone.start + 'T00:00:00Z').toLocaleDateString('en-ZA', { month: 'short', timeZone: 'UTC' });
@@ -1596,7 +1615,7 @@ class Component extends DCLogic {
           })
           .catch((e) => this.setState({ refreshing: false, refreshMsg: 'Refresh failed: ' + e.message }));
       },
-      month: s.month || 'AUG', monthOptions, dataRefreshedLabel,
+      month: s.month || (monthOptions[0] && monthOptions[0].value), monthOptions, dataRefreshedLabel,
       onMonth: (e) => this.setState({ month: e.target.value, date: null }),
       region: s.region, banner: s.banner, channel: s.channel, manager: s.manager, division: s.division, repType: s.repType,
       regionOptions, bannerOptions, channelOptions, managerOptions, divisionOptions, repTypeOptions,
