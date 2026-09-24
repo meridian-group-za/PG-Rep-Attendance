@@ -12,12 +12,11 @@
   // exempted for local dev/testing, matching the Sales Insights convention.
   // Replace with a real MSAL check once the Entra ID app registration for
   // this dashboard exists. (Carin, 2026-08-23)
-  (function () {
-    var isLocalDev = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    if (!isLocalDev && !sessionStorage.getItem('pg_rep_attendance_auth')) {
-      window.location.href = './login.html';
-    }
-  })();
+  // The sign-in screen that used to guard this page was an interim gate: it
+// accepted anyone who clicked it and set a per-tab flag, so it asked again in
+// every new tab while protecting nothing. Removed rather than left to imply a
+// control that was not there. (If real access control is wanted here, it needs
+// an Entra app registration and MSAL, the way Sales Insights does it.)
 </script>
 <!-- Every month's data file is now loaded dynamically in componentDidMount,
      driven entirely by manifest.json (which the Azure Function keeps
