@@ -78,15 +78,5 @@
     "year": 2026,
     "month": 8,
     "sourceModified": "2026-09-07T07:30:32Z"
-  },
-  {
-    "code": "SEP26",
-    "label": "September 2026",
-    "path": "Power BI - PG/Rep Attendance/Rep Attendance Auto - September 2026.xlsx",
-    "file": "attendance-data-sep26.js",
-    "var": "ATTENDANCE_DATA_SEP26",
-    "year": 2026,
-    "month": 9,
-    "sourceModified": "2026-09-28T10:05:26Z"
   }
 ]
