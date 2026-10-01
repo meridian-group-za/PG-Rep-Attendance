@@ -80,6 +80,16 @@
     "sourceModified": "2026-09-07T07:30:32Z"
   },
   {
+    "code": "OCT26",
+    "label": "October 2026",
+    "path": "Power BI - PG/Rep Attendance/Rep Attendance Auto - October 2026.xlsx",
+    "file": "attendance-data-oct26.js",
+    "var": "ATTENDANCE_DATA_OCT26",
+    "year": 2026,
+    "month": 10,
+    "sourceModified": "2026-10-01T06:57:40Z"
+  },
+  {
     "code": "SEP26",
     "label": "September 2026",
     "path": "Power BI - PG/Rep Attendance/Rep Attendance Auto - September 2026.xlsx",
@@ -87,6 +97,6 @@
     "var": "ATTENDANCE_DATA_SEP26",
     "year": 2026,
     "month": 9,
-    "sourceModified": "2026-10-01T06:25:18Z"
+    "sourceModified": "2026-10-01T06:58:59Z"
   }
 ]
